@@ -19,6 +19,7 @@ def createData():
     """
     dir_path = os.path.dirname(os.path.realpath(__file__))
     dataFolder = dir_path + "/data/ucf-101/"
+    #dataFolder = dir_path + "/data/own/"
     outputFolder = dir_path + "/data/training/"
     if not os.path.exists(outputFolder):
         os.makedirs(outputFolder)
