@@ -25,6 +25,12 @@ def imageToSquare(img):
                      centerCols-margin:centerCols+margin]
     return croppedImg
 
+def resizeImage(img, newSize = (90, 90)):
+    """
+    OpenCV function wrapper
+    """
+    return cv2.resize(img, newSize)
+
 def showImage(img, name = "Image"):
     """
     Wrapper to easily show an image in the OpenCV style. Avoids stupid crashes
@@ -32,3 +38,4 @@ def showImage(img, name = "Image"):
     cv2.imshow(name, img)
     cv2.waitKey(0)
     cv2.destroyWindow(name)
+
