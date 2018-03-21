@@ -38,10 +38,9 @@ def createData():
             halfpoint_frame = cap.get(7) // 2
             cap.set(1, halfpoint_frame)
             ret, frame = cap.read()
-            croppedFrame = imageToSquare(frame)
+            outputFrame = resizeImage(imageToSquare(frame))
             fileName = str.split(video, ".")[0]
-            cv2.imwrite(outputFolder + type + "/" + fileName + ".png", croppedFrame)
-            return
+            cv2.imwrite(outputFolder + type + "/" + fileName + ".png", outputFrame)
 
 
 def imageToSquare(img):
@@ -57,6 +56,7 @@ def imageToSquare(img):
     croppedImg = img[centerRows-margin:centerRows+margin, \
                      centerCols-margin:centerCols+margin]
     return croppedImg
+
 
 def resizeImage(img, newSize = (90, 90)):
     """
