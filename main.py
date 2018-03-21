@@ -6,15 +6,21 @@ import numpy as np
 #Edit paper: https://www.sharelatex.com/5152532135sdnhgphhqsbd
 
 def processVideos():
-    #TODO Read videos and transform them to input data
+    """
+    TODO Read videos and transform them to input data
+    """
     pass # Does nothing
 
 def train():
-    #TODO Train the NN
+    """
+    TODO Train the NN
+    """
     pass # Does nothing
 
 def test():
-    #TODO Test the NN
+    """
+    TODO Test the NN
+    """
     pass # Does nothing
 
 
