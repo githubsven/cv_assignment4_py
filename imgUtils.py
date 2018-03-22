@@ -12,18 +12,20 @@ import numpy as np
 import cv2
 import os
 
-def createData():
+# Global variables
+dataTypes = ["BrushingTeeth", "CuttingInKitchen", "JumpingJack", "Lunges", "WallPushups"]
+
+
+def createData(dataDir = "ucf-101", outputDir = "training"):
     """
     Creates images to feed to the Convolutional Neural Network
     It takes the frame at the middle of the video, and converts this to a png
     """
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    dataFolder = dir_path + "/data/ucf-101/"
-    #dataFolder = dir_path + "/data/own/"
-    outputFolder = dir_path + "/data/training/"
+    dataFolder = dir_path + "/data/" + dataDir + "/"
+    outputFolder = dir_path + "/data/" + outputDir + "/"
     if not os.path.exists(outputFolder):
         os.makedirs(outputFolder)
-    dataTypes = ["BrushingTeeth", "CuttingInKitchen", "JumpingJack", "Lunges", "WallPushups"]
 
     for type in dataTypes:
         if not os.path.exists(outputFolder + type):
