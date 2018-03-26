@@ -110,7 +110,7 @@ def processVideos(dataDir = "training", boundary = 0.8):
     train_data = np.asarray(images[0:bound], dtype=np.float16)
     train_labels = np.asarray(labels[0:bound])
     eval_data = np.asarray(images[bound:], dtype=np.float16)
-    eval_labels = np.asarray(images[bound:])
+    eval_labels = np.asarray(labels[bound:])
 
     return train_data, train_labels, eval_data, eval_labels
 
