@@ -16,7 +16,7 @@ import os
 dataTypes = ["BrushingTeeth", "CuttingInKitchen", "JumpingJack", "Lunges", "WallPushups"]
 
 
-def createData(dataDir = "ucf-101", outputDir = "training"):
+def createData(dataDir = "ucf-101", outputDir = "training", flip = False, multiple = 1):
     """
     Creates images to feed to the Convolutional Neural Network
     It takes the frame at the middle of the video, and converts this to a png
@@ -38,12 +38,16 @@ def createData(dataDir = "ucf-101", outputDir = "training"):
 
         for video in videos:
             cap = cv2.VideoCapture(dataFolder + type + "/" + video)
-            halfpoint_frame = cap.get(7) // 2
-            cap.set(1, halfpoint_frame)
-            ret, frame = cap.read()
-            outputFrame = resizeImage(imageToSquare(frame))
-            fileName = str.split(video, ".")[0]
-            cv2.imwrite(outputFolder + type + "/" + fileName + ".png", outputFrame)
+            for i in range(multiple):
+                frameNr = cap.get(7) // (multiple + 1) * i
+                cap.set(1, frameNr)
+                ret, frame = cap.read()
+                outputFrame = resizeImage(imageToSquare(frame))
+                fileName = str.split(video, ".")[0]
+                cv2.imwrite(outputFolder + type + "/" + fileName + "_" + i + ".png", outputFrame)
+                if flip:
+                    flippedFrame = cv2.flip(outputFrame,1)
+                    cv2.imwrite(outputFolder + type + "/" + fileName + "_" + i + "_flip.png", flippedFrame)
 
 
 def imageToSquare(img):
