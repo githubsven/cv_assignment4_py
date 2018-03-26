@@ -83,7 +83,7 @@ def cnn_model_fn(features, labels, mode):
       mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
 
 
-def processVideos(dataDir = "training"):
+def processVideos(dataDir = "training", boundary = 0.8):
     """
     Read videos and transform them to input data
     Returns images converted to np.arrays in the images dictionary ordered per label
@@ -106,11 +106,11 @@ def processVideos(dataDir = "training"):
             images.append(image)
             labels.append(type)
 
-    boundary = round(0.8 * len(images)) # The seperation between training data and evaluation data is at 80%
-    train_data = np.asarray(images[0:boundary], dtype=np.float16)
-    train_labels = np.asarray(labels[0:boundary])
-    eval_data = np.asarray(images[boundary:], dtype=np.float16)
-    eval_labels = np.asarray(images[boundary:])
+    bound = round(boundary * len(images)) # The seperation between training data and evaluation data is at 80%
+    train_data = np.asarray(images[0:bound], dtype=np.float16)
+    train_labels = np.asarray(labels[0:bound])
+    eval_data = np.asarray(images[bound:], dtype=np.float16)
+    eval_labels = np.asarray(images[bound:])
 
     return train_data, train_labels, eval_data, eval_labels
 
@@ -161,5 +161,5 @@ def main(argv):
 
 if __name__ == "__main__":
     #imgUtils.createData()
-    #imgUtils.createData("own")
+    #imgUtils.createData(dataDir = "own")
     tf.app.run()
