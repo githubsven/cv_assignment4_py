@@ -94,9 +94,9 @@ def train(classifier, data, labels):
     train_input_fn = tf.estimator.inputs.numpy_input_fn(
         x={"x": data},
         y=labels,
-        batch_size=1000,
-        num_epochs=None,
-        shuffle=True)
+        batch_size=64,
+        num_epochs=1,
+        shuffle=False)
 
     classifier.train(
         input_fn=train_input_fn,
@@ -139,6 +139,6 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    #imgUtils.createData()
-    #imgUtils.createData(dataDir = "own")
+    #imgUtils.createData(flip = True, multiple = 4)
+    #imgUtils.createData(dataDir = "own", flip = True, multiple = 4)
     tf.app.run()
