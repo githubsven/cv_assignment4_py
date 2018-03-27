@@ -89,7 +89,7 @@ def train(classifier, data, labels):
     """
     tensors_to_log = {"probabilities": "softmax_tensor"}
     logging_hook = tf.train.LoggingTensorHook(
-        tensors=tensors_to_log, every_n_iter=20)
+        tensors=tensors_to_log, every_n_iter=5)
 
     train_input_fn = tf.estimator.inputs.numpy_input_fn(
         x={"x": data},
@@ -117,8 +117,19 @@ def test(classifier, data, labels):
     print(eval_results)
 
 
+def splitData(images, labels, boundary = 0.8):
+    bound = round(boundary * len(images))  # The seperation between training data and evaluation data is at 80%
+    train_data = np.asarray(images[0:bound], dtype=np.float16)
+    train_labels = np.asarray(labels[0:bound])
+    eval_data = np.asarray(images[bound:], dtype=np.float16)
+    eval_labels = np.asarray(labels[bound:])
+
+    return train_data, train_labels, eval_data, eval_labels
+
+
 def main(argv):
-    train_data, train_labels, eval_data, eval_labels = imgUtils.processVideos()
+    images, labels = imgUtils.processVideos()
+    train_data, train_labels, eval_data, eval_labels = splitData(images, labels)
 
     modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model"
     classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)

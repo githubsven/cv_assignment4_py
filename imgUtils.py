@@ -11,9 +11,11 @@ Contains utilities to work with images
 import numpy as np
 import cv2
 import os
+import random
 
 # Global variables
 dataTypes = ["BrushingTeeth", "CuttingInKitchen", "JumpingJack", "Lunges", "WallPushups"]
+random.seed(1)
 
 
 def createData(dataDir = "ucf-101", outputDir = "training", flip = False, multiple = 1):
@@ -50,19 +52,18 @@ def createData(dataDir = "ucf-101", outputDir = "training", flip = False, multip
                     cv2.imwrite(outputFolder + type + "/" + fileName + "_" + str(i) + "_flip.png", flippedFrame)
 
 
-def processVideos(dataDir = "training", boundary = 0.8):
+def processVideos(dataDir = "training", shuffleData = True):
     """
     Read videos and transform them to input data
     Returns images converted to np.arrays in the images dictionary ordered per label
     """
     dir_path = os.path.dirname(os.path.realpath(__file__))
     dataFolder = dir_path + "/data/" + dataDir + "/"
-    dataTypes = imgUtils.dataTypes
 
     images = []
     labels = []
     for type in range(len(dataTypes)):
-        currentType = imgUtils.dataTypes[type]
+        currentType = dataTypes[type]
         files = []
         for (dirpath, dirnames, filenames) in os.walk(dataFolder + currentType + "/"):
             files.extend(filenames)
@@ -73,18 +74,22 @@ def processVideos(dataDir = "training", boundary = 0.8):
             images.append(image)
             labels.append(type)
 
-    bound = round(boundary * len(images)) # The seperation between training data and evaluation data is at 80%
-    train_data = np.asarray(images[0:bound], dtype=np.float16)
-    train_labels = np.asarray(labels[0:bound])
-    eval_data = np.asarray(images[bound:], dtype=np.float16)
-    eval_labels = np.asarray(labels[bound:])
+    if shuffleData:
+        shuffle(images, labels)
 
-    return train_data, train_labels, eval_data, eval_labels
+    return images, labels
+
 
 def shuffle(images, labels):
     for i in range(len(images)):
-        randInt = random()
-    pass
+        firstPos = random.randint(0, len(images) - 1)
+        secondPos = random.randint(0, len(images) - 1)
+        tempImage = images[firstPos]
+        tempLabel = labels[firstPos]
+        images[firstPos] = images[secondPos]
+        labels[firstPos] = labels[secondPos]
+        images[secondPos] = tempImage
+        labels[secondPos] = tempLabel
 
 
 def imageToSquare(img):
@@ -94,9 +99,9 @@ def imageToSquare(img):
     nRows, nCols, nChannels = np.shape(img)
     minimum = min(nRows, nCols)
 
-    centerRows = nRows//2 # Integer division
-    centerCols = nCols//2
-    margin = minimum//2
+    centerRows = nRows // 2 # Integer division
+    centerCols = nCols // 2
+    margin = minimum // 2
     croppedImg = img[centerRows-margin:centerRows+margin, \
                      centerCols-margin:centerCols+margin]
     return croppedImg
