@@ -44,10 +44,47 @@ def createData(dataDir = "ucf-101", outputDir = "training", flip = False, multip
                 ret, frame = cap.read()
                 outputFrame = resizeImage(imageToSquare(frame))
                 fileName = str.split(video, ".")[0]
-                cv2.imwrite(outputFolder + type + "/" + fileName + "_" + i + ".png", outputFrame)
+                cv2.imwrite(outputFolder + type + "/" + fileName + "_" + str(i) + ".png", outputFrame)
                 if flip:
                     flippedFrame = cv2.flip(outputFrame,1)
-                    cv2.imwrite(outputFolder + type + "/" + fileName + "_" + i + "_flip.png", flippedFrame)
+                    cv2.imwrite(outputFolder + type + "/" + fileName + "_" + str(i) + "_flip.png", flippedFrame)
+
+
+def processVideos(dataDir = "training", boundary = 0.8):
+    """
+    Read videos and transform them to input data
+    Returns images converted to np.arrays in the images dictionary ordered per label
+    """
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dataFolder = dir_path + "/data/" + dataDir + "/"
+    dataTypes = imgUtils.dataTypes
+
+    images = []
+    labels = []
+    for type in range(len(dataTypes)):
+        currentType = imgUtils.dataTypes[type]
+        files = []
+        for (dirpath, dirnames, filenames) in os.walk(dataFolder + currentType + "/"):
+            files.extend(filenames)
+            break  # Only needs to be executed once, because filenames is an array
+
+        for file in files:
+            image = cv2.imread(dataFolder + currentType + "/" + file)
+            images.append(image)
+            labels.append(type)
+
+    bound = round(boundary * len(images)) # The seperation between training data and evaluation data is at 80%
+    train_data = np.asarray(images[0:bound], dtype=np.float16)
+    train_labels = np.asarray(labels[0:bound])
+    eval_data = np.asarray(images[bound:], dtype=np.float16)
+    eval_labels = np.asarray(labels[bound:])
+
+    return train_data, train_labels, eval_data, eval_labels
+
+def shuffle(images, labels):
+    for i in range(len(images)):
+        randInt = random()
+    pass
 
 
 def imageToSquare(img):

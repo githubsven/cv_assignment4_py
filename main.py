@@ -14,7 +14,7 @@ def cnn_model_fn(features, labels, mode):
   # Input Layer
   # Reshape X to 4-D tensor: [batch_size, width, height, channels]
   # The frames are 90x90 pixels, and have one grayscale color channel
-  input_layer = tf.reshape(features["x"], [-1, 90, 90, 1])
+  input_layer = tf.reshape(features["x"], [-1, 90, 90, 3])
 
   # Convolutional Layer #1
   # Computes 32 features using a 5x5 filter with ReLU activation.
@@ -83,50 +83,18 @@ def cnn_model_fn(features, labels, mode):
       mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
 
 
-def processVideos(dataDir = "training", boundary = 0.8):
-    """
-    Read videos and transform them to input data
-    Returns images converted to np.arrays in the images dictionary ordered per label
-    """
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    dataFolder = dir_path + "/data/" + dataDir + "/"
-    dataTypes = imgUtils.dataTypes
-
-    images = []
-    labels = []
-    for type in range(len(dataTypes)):
-        currentType = imgUtils.dataTypes[type]
-        files = []
-        for (dirpath, dirnames, filenames) in os.walk(dataFolder + currentType + "/"):
-            files.extend(filenames)
-            break  # Only needs to be executed once, because filenames is an array
-
-        for file in files:
-            image = cv2.imread(dataFolder + currentType + "/" + file, 0) # Load an color image in grayscale
-            images.append(image)
-            labels.append(type)
-
-    bound = round(boundary * len(images)) # The seperation between training data and evaluation data is at 80%
-    train_data = np.asarray(images[0:bound], dtype=np.float16)
-    train_labels = np.asarray(labels[0:bound])
-    eval_data = np.asarray(images[bound:], dtype=np.float16)
-    eval_labels = np.asarray(labels[bound:])
-
-    return train_data, train_labels, eval_data, eval_labels
-
-
 def train(classifier, data, labels):
     """
     TODO Train the NN
     """
     tensors_to_log = {"probabilities": "softmax_tensor"}
     logging_hook = tf.train.LoggingTensorHook(
-        tensors=tensors_to_log, every_n_iter=50)
+        tensors=tensors_to_log, every_n_iter=20)
 
     train_input_fn = tf.estimator.inputs.numpy_input_fn(
         x={"x": data},
         y=labels,
-        batch_size=100,
+        batch_size=1000,
         num_epochs=None,
         shuffle=True)
 
@@ -150,12 +118,12 @@ def test(classifier, data, labels):
 
 
 def main(argv):
-    train_data, train_labels, eval_data, eval_labels = processVideos()
+    train_data, train_labels, eval_data, eval_labels = imgUtils.processVideos()
 
     modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model"
     classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
 
-    #train(classifier, train_data, train_labels)
+    train(classifier, train_data, train_labels)
     test(classifier, eval_data, eval_labels)
 
 
