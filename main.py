@@ -1,8 +1,7 @@
-import numpy as np
-import cv2
 import tensorflow as tf
 import os
-import imgUtils
+import imgUtils, dataUtils
+
 
 #Edit paper: https://www.sharelatex.com/5152532135sdnhgphhqsbd
 
@@ -95,12 +94,12 @@ def train(classifier, data, labels):
         x={"x": data},
         y=labels,
         batch_size=64,
-        num_epochs=1,
+        num_epochs=3,
         shuffle=False)
 
     classifier.train(
         input_fn=train_input_fn,
-        steps=25,
+        steps=2000,
         hooks=[logging_hook])
 
 
@@ -117,28 +116,41 @@ def test(classifier, data, labels):
     print(eval_results)
 
 
-def splitData(images, labels, boundary = 0.8):
-    bound = round(boundary * len(images))  # The seperation between training data and evaluation data is at 80%
-    train_data = np.asarray(images[0:bound], dtype=np.float16)
-    train_labels = np.asarray(labels[0:bound])
-    eval_data = np.asarray(images[bound:], dtype=np.float16)
-    eval_labels = np.asarray(labels[bound:])
-
-    return train_data, train_labels, eval_data, eval_labels
-
-
 def main(argv):
     images, labels = imgUtils.processVideos()
-    train_data, train_labels, eval_data, eval_labels = splitData(images, labels)
 
-    modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model"
-    classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
+    ### BEGIN RUN ONCE ###
 
-    train(classifier, train_data, train_labels)
-    test(classifier, eval_data, eval_labels)
+    #modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model"
+    #classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
+
+    # train_data, train_labels, eval_data, eval_labels = simple_split(images, labels)
+
+    #train(classifier, train_data, train_labels)
+    #test(classifier, eval_data, eval_labels)
+
+    ### END RUN ONCE ###
+
+
+    ### BEGIN 10 CROSSFOLD VALIDATION ###
+
+    divided_images = dataUtils.divide_data(images)
+    divided_labels = dataUtils.divide_data(labels)
+
+    for i in range(len(divided_images)):
+        modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model_" + str(i)
+        classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
+
+        train_data, eval_data = dataUtils.prepare_training_test_data(divided_images, i)
+        train_labels, eval_labels = dataUtils.prepare_training_test_data(divided_labels, i)
+
+        train(classifier, train_data, train_labels)
+        test(classifier, eval_data, eval_labels)
+
+    ### END 10 CROSSFOLD VALIDATION ###
 
 
 if __name__ == "__main__":
-    #imgUtils.createData(flip = True, multiple = 4)
-    #imgUtils.createData(dataDir = "own", flip = True, multiple = 4)
+    #imgUtils.createData(flip = True, multiple = 10)
+    #imgUtils.createData(dataDir = "own", flip = True, multiple = 10)
     tf.app.run()
