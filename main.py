@@ -89,18 +89,20 @@ def cnn_model_fn(features, labels, mode):
   # Output Tensor Shape: [batch_size, 5]
   logits = tf.layers.dense(inputs=dropout, units=5)
 
+  # Calculate Loss (for both TRAIN and EVAL modes)
+  loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
+
   predictions = {
       # Generate predictions (for PREDICT and EVAL mode)
       "classes": tf.argmax(input=logits, axis=1),
       # Add `softmax_tensor` to the graph. It is used for PREDICT and by the
       # `logging_hook`.
-      "probabilities": tf.nn.softmax(logits, name="softmax_tensor")
+      "probabilities": tf.nn.softmax(logits, name="softmax_tensor"),
+      "error":  tf.reduce_mean(loss, name="loss_tensor")
   }
   if mode == tf.estimator.ModeKeys.PREDICT:
       return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
 
-  # Calculate Loss (for both TRAIN and EVAL modes)
-  loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
 
   # Configure the Training Op (for TRAIN mode)
   if mode == tf.estimator.ModeKeys.TRAIN:
@@ -122,9 +124,9 @@ def train(classifier, data, labels):
     """
     TODO Train the NN
     """
-    tensors_to_log = {"probabilities": "softmax_tensor"}
+    tensors_to_log = {"probabilities": "softmax_tensor", "error": "loss_tensor"}
     logging_hook = tf.train.LoggingTensorHook(
-        tensors=tensors_to_log, every_n_iter=5)
+        tensors=tensors_to_log, every_n_iter=2)
 
     train_input_fn = tf.estimator.inputs.numpy_input_fn(
         x={"x": data},
@@ -135,7 +137,7 @@ def train(classifier, data, labels):
 
     classifier.train(
         input_fn=train_input_fn,
-        steps=2000,
+        steps=200,
         hooks=[logging_hook])
 
 
@@ -187,6 +189,6 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    #imgUtils.createData(flip = True, multiple = 3)
-    #imgUtils.createData(dataDir = "own", flip = True, multiple = 3)
+    #ImgUtils.createData(flip = False, multiple = 1)
+    #imgUtils.createData(dataDir = "own", flip = False, multiple = 1)
     tf.app.run()
