@@ -23,6 +23,24 @@ def cnn_model_fn(features, labels, mode):
   conv1 = tf.layers.conv2d(
       inputs=input_layer,
       filters=32,
+      kernel_size=[3, 3],
+      padding="same",
+      activation=tf.nn.relu)
+
+  # Pooling Layer #1
+  # First max pooling layer with a 2x2 filter and stride of 2
+  # Input Tensor Shape: [batch_size, 86, 86, 32]
+  # Output Tensor Shape: [batch_size, 43, 43, 32]
+  pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
+
+  # Convolutional Layer #1
+  # Computes 32 features using a 5x5 filter with ReLU activation.
+  # Padding is added to preserve width and height.
+  # Input Tensor Shape: [batch_size, 90, 90, 1]
+  # Output Tensor Shape: [batch_size, 86, 86, 32]
+  conv2 = tf.layers.conv2d(
+      inputs=pool1,
+      filters=32,
       kernel_size=[5, 5],
       padding="same",
       activation=tf.nn.relu)
@@ -31,18 +49,36 @@ def cnn_model_fn(features, labels, mode):
   # First max pooling layer with a 2x2 filter and stride of 2
   # Input Tensor Shape: [batch_size, 86, 86, 32]
   # Output Tensor Shape: [batch_size, 43, 43, 32]
-  pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=4)
+  pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
+
+  # Convolutional Layer #1
+  # Computes 32 features using a 5x5 filter with ReLU activation.
+  # Padding is added to preserve width and height.
+  # Input Tensor Shape: [batch_size, 90, 90, 1]
+  # Output Tensor Shape: [batch_size, 86, 86, 32]
+  conv3 = tf.layers.conv2d(
+      inputs=pool2,
+      filters=32,
+      kernel_size=[5, 5],
+      padding="same",
+      activation=tf.nn.relu)
+
+  # Pooling Layer #1
+  # First max pooling layer with a 2x2 filter and stride of 2
+  # Input Tensor Shape: [batch_size, 86, 86, 32]
+  # Output Tensor Shape: [batch_size, 43, 43, 32]
+  pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], strides=2)
 
   # Flatten tensor into a batch of vectors
   # Input Tensor Shape: [batch_size, 19, 19, 64]
   # Output Tensor Shape: [batch_size, 19 * 19 * 64]
-  pool2_flat = tf.reshape(pool1, [-1, 23 * 23 * 32])
+  pool3_flat = tf.reshape(pool3, [-1, 11 * 11 * 32])
 
   # Dense Layer
   # Densely connected layer with 1024 neurons
   # Input Tensor Shape: [batch_size, 19 * 19 * 64]
   # Output Tensor Shape: [batch_size, 1024]
-  dense = tf.layers.dense(inputs=pool2_flat, units=1024, activation=tf.nn.relu)
+  dense = tf.layers.dense(inputs=pool3_flat, units=1024, activation=tf.nn.relu)
 
   # Add dropout operation; 0.6 probability that element will be kept
   dropout = tf.layers.dropout(
@@ -121,36 +157,36 @@ def main(argv):
 
     ### BEGIN RUN ONCE ###
 
-    #modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model"
-    #classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
+    modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model"
+    classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
 
-    # train_data, train_labels, eval_data, eval_labels = simple_split(images, labels)
+    train_data, train_labels, eval_data, eval_labels = dataUtils.simple_split(images, labels)
 
-    #train(classifier, train_data, train_labels)
-    #test(classifier, eval_data, eval_labels)
+    train(classifier, train_data, train_labels)
+    test(classifier, eval_data, eval_labels)
 
     ### END RUN ONCE ###
 
 
     ### BEGIN 10 CROSSFOLD VALIDATION ###
 
-    divided_images = dataUtils.divide_data(images)
-    divided_labels = dataUtils.divide_data(labels)
-
-    for i in range(len(divided_images)):
-        modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model_" + str(i)
-        classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
-
-        train_data, eval_data = dataUtils.prepare_training_test_data(divided_images, i)
-        train_labels, eval_labels = dataUtils.prepare_training_test_data(divided_labels, i)
-
-        train(classifier, train_data, train_labels)
-        test(classifier, eval_data, eval_labels)
+    # divided_images = dataUtils.divide_data(images)
+    # divided_labels = dataUtils.divide_data(labels)
+    #
+    # for i in range(len(divided_images)):
+    #     modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model_" + str(i)
+    #     classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
+    #
+    #     train_data, eval_data = dataUtils.prepare_training_test_data(divided_images, i)
+    #     train_labels, eval_labels = dataUtils.prepare_training_test_data(divided_labels, i)
+    #
+    #     train(classifier, train_data, train_labels)
+    #     test(classifier, eval_data, eval_labels)
 
     ### END 10 CROSSFOLD VALIDATION ###
 
 
 if __name__ == "__main__":
-    #imgUtils.createData(flip = True, multiple = 10)
-    #imgUtils.createData(dataDir = "own", flip = True, multiple = 10)
+    #imgUtils.createData(flip = True, multiple = 3)
+    #imgUtils.createData(dataDir = "own", flip = True, multiple = 3)
     tf.app.run()

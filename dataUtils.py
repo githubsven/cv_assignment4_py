@@ -32,7 +32,7 @@ def prepare_training_test_data(divided_data, i_test):
     for i in range(len(divided_data)):
         if i != i_test:
             training_data += divided_data[i]
-    return np.asarray(training_data), np.asarray(test_data)
+    return np.asarray(training_data , dtype=np.float16), np.asarray(test_data, dtype=np.float16)
 
 
 def simple_split(images, labels, boundary = 0.8):
