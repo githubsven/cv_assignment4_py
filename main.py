@@ -7,6 +7,18 @@ import imgUtils, dataUtils
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
+#Copied from https://stackoverflow.com/questions/46326376/tensorflow-confusion-matrix-in-experimenter-during-evaluation
+def eval_confusion_matrix(labels, predictions):
+    with tf.variable_scope("eval_confusion_matrix"):
+        con_matrix = tf.confusion_matrix(labels=labels, predictions=predictions, num_classes=5)
+        con_matrix_sum = tf.Variable(tf.zeros(shape=(5,5), dtype=tf.int32),
+                                            trainable=False,
+                                            name="confusion_matrix_result",
+                                            collections=[tf.GraphKeys.LOCAL_VARIABLES])
+
+        update_op = tf.assign_add(con_matrix_sum, con_matrix)
+        return tf.convert_to_tensor(con_matrix_sum), update_op
+
 
 def cnn_model_fn(features, labels, mode):
   """Model function for CNN."""
@@ -97,7 +109,7 @@ def cnn_model_fn(features, labels, mode):
       "classes": tf.argmax(input=logits, axis=1),
       # Add `softmax_tensor` to the graph. It is used for PREDICT and by the
       # `logging_hook`.
-      "probabilities": tf.nn.softmax(logits, name="softmax_tensor"),
+      # "probabilities": tf.nn.softmax(logits, name="softmax_tensor"),
       "error":  tf.reduce_mean(loss, name="loss_tensor")
   }
   if mode == tf.estimator.ModeKeys.PREDICT:
@@ -114,8 +126,12 @@ def cnn_model_fn(features, labels, mode):
 
   # Add evaluation metrics (for EVAL mode)
   eval_metric_ops = {
-      "accuracy": tf.metrics.accuracy(
-          labels=labels, predictions=predictions["classes"])}
+    "accuracy": tf.metrics.accuracy(labels=labels, predictions=predictions["classes"]),
+    "precision": tf.metrics.precision(labels=labels, predictions=predictions["classes"]),
+    "confusion_matrix": eval_confusion_matrix(labels=labels, predictions=predictions["classes"]),
+    "recall": tf.metrics.recall(labels=labels, predictions=predictions["classes"])
+  }
+  #fScore = 2 * eval_metric_ops["precision"] * eval_metric_ops["recall"] / (eval_metric_ops["precision"] + eval_metric_ops["recall"])
   return tf.estimator.EstimatorSpec(
       mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
 
@@ -124,7 +140,7 @@ def train(classifier, data, labels):
     """
     TODO Train the NN
     """
-    tensors_to_log = {"probabilities": "softmax_tensor", "error": "loss_tensor"}
+    tensors_to_log = {"error": "loss_tensor"}
     logging_hook = tf.train.LoggingTensorHook(
         tensors=tensors_to_log, every_n_iter=2)
 
@@ -164,7 +180,7 @@ def main(argv):
 
     train_data, train_labels, eval_data, eval_labels = dataUtils.simple_split(images, labels)
 
-    train(classifier, train_data, train_labels)
+    #train(classifier, train_data, train_labels)
     test(classifier, eval_data, eval_labels)
 
     ### END RUN ONCE ###
