@@ -167,6 +167,7 @@ def test(classifier, data, labels):
         num_epochs=1,
         shuffle=False)
     eval_results = classifier.evaluate(input_fn=eval_input_fn)
+    eval_results["F-Score"] = 2 * eval_results["precision"] * eval_results["recall"] / (eval_results["precision"] + eval_results["recall"])
     print(eval_results)
 
 
