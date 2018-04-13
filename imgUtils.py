@@ -80,7 +80,7 @@ def processVideos(dataDir = "training", shuffleData = True):
     return images, labels
 
 
-def shuffle(images, labels):
+def original_shuffle(images, labels):
     for i in range(len(images)):
         firstPos = random.randint(0, len(images) - 1)
         secondPos = random.randint(0, len(images) - 1)
@@ -91,6 +91,17 @@ def shuffle(images, labels):
         images[secondPos] = tempImage
         labels[secondPos] = tempLabel
 
+def shuffle(images, labels):
+    size = len(images)
+    order = list(range(size))
+    random.shuffle(order)
+    copy_images = images.copy()
+    copy_labels = labels.copy()
+    for i in range(size):
+        firstPos = i
+        secondPos = order[i]
+        images[firstPos] = copy_images[secondPos]
+        labels[firstPos] = copy_labels[secondPos]
 
 def imageToSquare(img):
     """
