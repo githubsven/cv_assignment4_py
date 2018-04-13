@@ -26,13 +26,13 @@ def divide_data(data, n_parts = 10):
     return division
 
 
-def prepare_training_test_data(divided_data, i_test):
+def prepare_training_test_data(divided_data, i_test, dtype):
     test_data = divided_data[i_test]
     training_data = []
     for i in range(len(divided_data)):
         if i != i_test:
             training_data += divided_data[i]
-    return np.asarray(training_data , dtype=np.float16), np.asarray(test_data, dtype=np.float16)
+    return np.asarray(training_data , dtype=dtype), np.asarray(test_data, dtype=dtype)
 
 
 def simple_split(images, labels, boundary = 0.8):

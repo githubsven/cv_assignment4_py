@@ -1,6 +1,7 @@
 import tensorflow as tf
 import os
 import imgUtils, dataUtils
+import numpy as np
 
 
 #Edit paper: https://www.sharelatex.com/5152532135sdnhgphhqsbd
@@ -176,31 +177,31 @@ def main(argv):
 
     ### BEGIN RUN ONCE ###
 
-    modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model"
-    classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
-
-    train_data, train_labels, eval_data, eval_labels = dataUtils.simple_split(images, labels)
-
-    #train(classifier, train_data, train_labels)
-    test(classifier, eval_data, eval_labels)
+#    modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model"
+#    classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
+#
+#    train_data, train_labels, eval_data, eval_labels = dataUtils.simple_split(images, labels)
+#
+#    #train(classifier, train_data, train_labels)
+#    test(classifier, eval_data, eval_labels)
 
     ### END RUN ONCE ###
 
 
     ### BEGIN 10 CROSSFOLD VALIDATION ###
 
-    # divided_images = dataUtils.divide_data(images)
-    # divided_labels = dataUtils.divide_data(labels)
-    #
-    # for i in range(len(divided_images)):
-    #     modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model_" + str(i)
-    #     classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
-    #
-    #     train_data, eval_data = dataUtils.prepare_training_test_data(divided_images, i)
-    #     train_labels, eval_labels = dataUtils.prepare_training_test_data(divided_labels, i)
-    #
-    #     train(classifier, train_data, train_labels)
-    #     test(classifier, eval_data, eval_labels)
+    divided_images = dataUtils.divide_data(images, 3)
+    divided_labels = dataUtils.divide_data(labels, 3)
+   
+    for i in range(len(divided_images)):
+        modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model_" + str(i)
+        classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
+   
+        train_data, eval_data = dataUtils.prepare_training_test_data(divided_images, i, np.float16)
+        train_labels, eval_labels = dataUtils.prepare_training_test_data(divided_labels, i, np.int32)
+   
+        train(classifier, train_data, train_labels)
+        test(classifier, eval_data, eval_labels)
 
     ### END 10 CROSSFOLD VALIDATION ###
 
