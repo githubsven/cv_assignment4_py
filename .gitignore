@@ -4,4 +4,4 @@
 \model/
 __pycache__
 .spyproject
-model_*
+model*
