@@ -132,10 +132,6 @@ def cnn_model_fn(features, labels, mode):
       mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
 
 
-
-
-
-
 def cnn_9x9_model_fn(features, labels, mode):
   """Model function for CNN."""
   # Input Layer
@@ -479,10 +475,10 @@ def main(argv):
 
     ### BEGIN RUN ONCE ###
 #
-#    modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model"
-##    classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
+    modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model"
+    classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
 #    classifier = tf.estimator.Estimator(model_fn=cnn_4_layer_model_fn, model_dir=modelDir+"_4layer")
-##    classifier = tf.estimator.Estimator(model_fn=cnn_9x9_model_fn, model_dir=modelDir+"_9x9kernel")
+#    classifier = tf.estimator.Estimator(model_fn=cnn_9x9_model_fn, model_dir=modelDir+"_9x9kernel")
 #
 #    train_data, train_labels, eval_data, eval_labels = dataUtils.simple_split(images, labels)
 #
@@ -490,7 +486,7 @@ def main(argv):
 #    test(classifier, eval_data, eval_labels)
 
     train_data, train_labels, eval_data, eval_labels = dataUtils.simple_split(images, labels)
-    #predict(classifier, train_data[0]) # Give the classification for a single frame
+#    predict(classifier, train_data[0]) # Give the classification for a single frame
 
     train(classifier, train_data, train_labels) # Train the CNN on all frames in the training folder
     test(classifier, eval_data, eval_labels)
@@ -510,9 +506,9 @@ def main(argv):
 #    name = "{}foldcv".format(nFolds)
 #    experiment_n_fold(images, labels, nFolds, name, True)
 #
-    nFolds = 10
-    name = "base".format(nFolds)
-    experiment_n_fold(images, labels, nFolds, name, False)
+#    nFolds = 10
+#    name = "base".format(nFolds)
+#    experiment_n_fold(images, labels, nFolds, name, False)
 #    
 #    nFolds = 5
 #    name = "{}foldcv".format(nFolds)
