@@ -3,7 +3,6 @@ import os
 import imgUtils, dataUtils
 import numpy as np
 
-
 #Edit paper: https://www.sharelatex.com/5152532135sdnhgphhqsbd
 
 tf.logging.set_verbosity(tf.logging.INFO)
@@ -102,20 +101,16 @@ def cnn_model_fn(features, labels, mode):
   # Output Tensor Shape: [batch_size, 5]
   logits = tf.layers.dense(inputs=dropout, units=5)
 
-  # Calculate Loss (for both TRAIN and EVAL modes)
-  loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
-
   predictions = {
       # Generate predictions (for PREDICT and EVAL mode)
       "classes": tf.argmax(input=logits, axis=1),
-      # Add `softmax_tensor` to the graph. It is used for PREDICT and by the
-      # `logging_hook`.
-      # "probabilities": tf.nn.softmax(logits, name="softmax_tensor"),
-      "error":  tf.reduce_mean(loss, name="loss_tensor")
   }
   if mode == tf.estimator.ModeKeys.PREDICT:
       return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
 
+  # Calculate Loss (for both TRAIN and EVAL modes)
+  loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
+  error = tf.reduce_mean(loss, name="loss_tensor")
 
   # Configure the Training Op (for TRAIN mode)
   if mode == tf.estimator.ModeKeys.TRAIN:
@@ -132,7 +127,7 @@ def cnn_model_fn(features, labels, mode):
     "confusion_matrix": eval_confusion_matrix(labels=labels, predictions=predictions["classes"]),
     "recall": tf.metrics.recall(labels=labels, predictions=predictions["classes"])
   }
-  #fScore = 2 * eval_metric_ops["precision"] * eval_metric_ops["recall"] / (eval_metric_ops["precision"] + eval_metric_ops["recall"])
+
   return tf.estimator.EstimatorSpec(
       mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
 
@@ -172,6 +167,16 @@ def test(classifier, data, labels):
     print(eval_results)
 
 
+def predict(classifier, data):
+    predict_input_fn = tf.estimator.inputs.numpy_input_fn(
+        x={"x": data},
+        y=data,
+        shuffle=False
+    )
+    prediction = classifier.predict(input_fn=predict_input_fn)
+    print(list(prediction))
+
+
 def main(argv):
     images, labels = imgUtils.processVideos()
 
@@ -184,6 +189,12 @@ def main(argv):
 #
 #    #train(classifier, train_data, train_labels)
 #    test(classifier, eval_data, eval_labels)
+
+    train_data, train_labels, eval_data, eval_labels = dataUtils.simple_split(images, labels)
+    #predict(classifier, train_data[0]) # Give the classification for a single frame
+
+    train(classifier, train_data, train_labels) # Train the CNN on all frames in the training folder
+    test(classifier, eval_data, eval_labels)
 
     ### END RUN ONCE ###
 
@@ -207,6 +218,6 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    #ImgUtils.createData(flip = False, multiple = 1)
-    #imgUtils.createData(dataDir = "own", flip = False, multiple = 1)
+    imgUtils.createData(flip = False, multiple = 2)
+    imgUtils.createData(dataDir = "own", flip = False, multiple = 2)
     tf.app.run()
