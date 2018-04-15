@@ -79,6 +79,51 @@ def processVideos(dataDir = "training", shuffleData = True):
 
     return images, labels
 
+def prepareTestOurVideos(trainingDir = "our_training",
+                         testingDir = "our_testing", shuffleData = True):
+    
+    
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dataFolderTraining = dir_path + "/data/" + trainingDir + "/"
+
+    imagesTraining = []
+    labelsTraining = []
+    for type in range(len(dataTypes)):
+        currentType = dataTypes[type]
+        files = []
+        for (dirpath, dirnames, filenames) in os.walk(dataFolderTraining + currentType + "/"):
+            files.extend(filenames)
+            break  # Only needs to be executed once, because filenames is an array
+
+        for file in files:
+            image = cv2.imread(dataFolderTraining + currentType + "/" + file)
+            imagesTraining.append(image)
+            labelsTraining.append(type)
+    
+    dataFolderTesting = dir_path + "/data/" + testingDir + "/"
+    
+    imagesTesting = []
+    labelsTesting = []
+    for type in range(len(dataTypes)):
+        currentType = dataTypes[type]
+        files = []
+        for (dirpath, dirnames, filenames) in os.walk(dataFolderTesting + currentType + "/"):
+            files.extend(filenames)
+            break  # Only needs to be executed once, because filenames is an array
+
+        for file in files:
+            image = cv2.imread(dataFolderTesting + currentType + "/" + file)
+            imagesTesting.append(image)
+            labelsTesting.append(type)
+
+    if shuffleData:
+        shuffle(imagesTraining, labelsTraining)
+        shuffle(imagesTesting, labelsTesting)
+    train_data = np.asarray(imagesTraining, dtype=np.float16)
+    train_labels = np.asarray(labelsTraining)
+    test_data = np.asarray(imagesTesting, dtype=np.float16)
+    test_labels = np.asarray(labelsTesting)
+    return train_data, train_labels, test_data, test_labels
 
 def original_shuffle(images, labels):
     for i in range(len(images)):
