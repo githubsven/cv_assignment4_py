@@ -182,13 +182,8 @@ def main(argv):
 
     ### BEGIN RUN ONCE ###
 
-#    modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model"
-#    classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
-#
-#    train_data, train_labels, eval_data, eval_labels = dataUtils.simple_split(images, labels)
-#
-#    #train(classifier, train_data, train_labels)
-#    test(classifier, eval_data, eval_labels)
+    modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model"
+    classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
 
     train_data, train_labels, eval_data, eval_labels = dataUtils.simple_split(images, labels)
     #predict(classifier, train_data[0]) # Give the classification for a single frame
@@ -201,23 +196,23 @@ def main(argv):
 
     ### BEGIN 10 CROSSFOLD VALIDATION ###
 
-    divided_images = dataUtils.divide_data(images, 3)
-    divided_labels = dataUtils.divide_data(labels, 3)
+    #divided_images = dataUtils.divide_data(images, 3)
+    #divided_labels = dataUtils.divide_data(labels, 3)
    
-    for i in range(len(divided_images)):
-        modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model_" + str(i)
-        classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
+    #for i in range(len(divided_images)):
+    #    modelDir = os.path.dirname(os.path.realpath(__file__)) + "/model_" + str(i)
+    #    classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir=modelDir)
    
-        train_data, eval_data = dataUtils.prepare_training_test_data(divided_images, i, np.float16)
-        train_labels, eval_labels = dataUtils.prepare_training_test_data(divided_labels, i, np.int32)
+    #    train_data, eval_data = dataUtils.prepare_training_test_data(divided_images, i, np.float16)
+    #    train_labels, eval_labels = dataUtils.prepare_training_test_data(divided_labels, i, np.int32)
    
-        train(classifier, train_data, train_labels)
-        test(classifier, eval_data, eval_labels)
+    #    train(classifier, train_data, train_labels)
+    #    test(classifier, eval_data, eval_labels)
 
     ### END 10 CROSSFOLD VALIDATION ###
 
 
 if __name__ == "__main__":
-    imgUtils.createData(flip = False, multiple = 2)
-    imgUtils.createData(dataDir = "own", flip = False, multiple = 2)
+    #imgUtils.createData(flip = False, multiple = 1)
+    #imgUtils.createData(dataDir = "own", flip = False, multiple = 1)
     tf.app.run()
